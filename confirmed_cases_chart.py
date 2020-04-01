@@ -6,8 +6,7 @@ import plotly.graph_objects as go
 from app import cache
 from utils.settings import NCOV19_API
 
-
-# @cache.memoize(timeout=3600)
+@cache.memoize(timeout=3600)
 def confirmed_cases_chart(state='US') -> go.Figure:
     """Bar chart data for the selected state.
 
@@ -19,25 +18,11 @@ def confirmed_cases_chart(state='US') -> go.Figure:
     if state=='US':
         URL = root + 'country'
         payload = json.dumps({"alpha2Code": "US"})
-
-        # staging API
-        URL = 'https://covid19-us-api-staging.herokuapp.com/' + "country"
-        # production API
-        # URL = "https://covid19-us-api.herokuapp.com/" + "country"
-        response = requests.post(URL, data=payload).json()
-        data = response["message"]
-        data = pd.DataFrame(data) # TODO remove for production
-        # data = pd.read_json(data, orient="records") # TODO uncomment for production
-        data = data.rename(columns={"Confirmed": "Confirmed Cases"})
-        data = data.tail(60)
-
     else:
 
         # TODO need to get from db when data is available
         # URL = root + 'stats'
         # payload = json.dumps({'state': state})
-
-        # TODO add error handling, try except
 
         ##########################################
         # Section for reading data from csv file #
@@ -48,8 +33,8 @@ def confirmed_cases_chart(state='US') -> go.Figure:
         deaths = pd.read_csv('time_series_covid19_deaths_US.csv')
 
         # look up state name from state code in codes table
-        # state_name = codes[codes['Two Letter String']==state].Name.iloc[0].strip()
-        state_name = state
+        state_name = codes[codes['Two Letter String']==state].Name.iloc[0].strip()
+
         # get confirmed cases df
         data = cases[cases.Province_State == state_name]
         data = pd.DataFrame(data.aggregate('sum')[11:],columns=['Confirmed Cases'])
@@ -69,6 +54,17 @@ def confirmed_cases_chart(state='US') -> go.Figure:
         #               end section               #
         ###########################################
 
+        
+    # staging API
+    # URL = 'https://covid19-us-api-staging.herokuapp.com/' + "country"
+    # production API
+    # URL = "https://covid19-us-api.herokuapp.com/" + "country"
+    # response = requests.post(URL, data=payload).json()
+    # data = response["message"]
+    # data = pd.DataFrame(data) # TODO remove for production
+    # # data = pd.read_json(data, orient="records") # TODO uncomment for production
+    # data = data.rename(columns={"Confirmed": "Confirmed Cases"})
+    # data = data.tail(60)
 
     template_cases = "%{y} confirmed cases on %{x}<extra></extra>"
     template_deaths = "%{y} confirmed deaths on %{x}<extra></extra>"

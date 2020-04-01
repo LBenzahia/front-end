@@ -159,6 +159,41 @@ def mobile_map_tab_content(value, state):
     else:
         return confirmed_scatter_mapbox(state=state)
 
+########################################################################
+#
+#  Confirmed cases chart callback
+#
+########################################################################
+
+confirmed_chart = dbc.Card(
+    dbc.CardBody(
+        [
+            html.Div(
+                "US COVID-19 Timeline",
+                className="mobile-top-bottom-left-chart-h1-title",
+            ),
+            html.Div(
+                "Confirmed Cases and Deaths",
+                className="mobile-top-bottom-left-chart-h2-title",
+            ),
+            dcc.Graph(
+                config={"scrollZoom": False},  # "staticPlot": True,
+                style={"height": "20vh"},
+                id = "mobile-confirmed-cases"
+            ),
+        ]
+    )
+),
+
+
+@app.callback([Output("mobile-confirmed-cases", "figure")],
+              [Input("mobile-intermediate-value", "children")])
+
+def confirmed_cases_chart_callback(state):
+    print(f'\n\nconfirmed_cases_chart_mobile_callback for "{state}"')
+    fig = confirmed_cases_chart(state = state) 
+    return [fig]
+
 
 ########################################################################
 #
@@ -224,6 +259,7 @@ def stats_tab_content(value):
 # Mobile App body layout
 #
 ########################################################################
+
 mobile_body = [
     html.Div(
         id="mobile-intermediate-value", children="US", style={"display": "none"}
@@ -242,25 +278,7 @@ mobile_body = [
     dbc.Col(stats_tabs, className="mobile-right-col-stats-content", width=2,),
 
     html.Div(
-        dbc.Card(
-            dbc.CardBody(
-                [
-                    html.Div(
-                        "US COVID-19 Timeline",
-                        className="mobile-top-bottom-left-chart-h1-title",
-                    ),
-                    html.Div(
-                        "Confirmed Cases and Deaths",
-                        className="mobile-top-bottom-left-chart-h2-title",
-                    ),
-                    dcc.Graph(
-                        figure=confirmed_cases_chart(),
-                        config={"scrollZoom": False},  # "staticPlot": True,
-                        style={"height": "20vh"},
-                    ),
-                ]
-            )
-        ),
+        confirmed_chart,
         style={"margin-bottom": "1.5rem"},
         className="mobile-chart",
     ),
@@ -332,3 +350,4 @@ def multi_output(*n_clicks):
             # print(ctx)
             # print(n_clicks)
             return ["US"]
+
